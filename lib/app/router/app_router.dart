@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,14 +15,32 @@ import '../../features/doctor_appointments/presentation/pages/appointment_detail
 import '../../features/prescriptions/domain/entities/prescription_entity.dart';
 import '../../features/prescriptions/presentation/pages/create_prescription_page.dart';
 import '../../features/prescriptions/presentation/pages/prescription_details_page.dart';
+import '../../features/notifications/presentation/pages/inbox_page.dart';
 import 'route_names.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+/// Converts a Cubit stream into a Listenable for GoRouter refresh
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
 
 GoRouter createRouter(AuthCubit authCubit) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: RouteNames.splash, // Start with splash, not login
+    refreshListenable: GoRouterRefreshStream(authCubit.stream),
     redirect: (context, state) {
       final isLoggedIn = authCubit.state.isLoggedIn;
       final isOnSplash = state.matchedLocation == RouteNames.splash;
@@ -95,6 +115,12 @@ GoRouter createRouter(AuthCubit authCubit) {
           final appointment = state.extra as DoctorAppointmentEntity;
           return AppointmentDetailsPage(appointment: appointment);
         },
+      ),
+
+      // Notifications
+      GoRoute(
+        path: RouteNames.inbox,
+        builder: (context, state) => const InboxPage(),
       ),
     ],
   );

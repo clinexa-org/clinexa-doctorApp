@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../../app/widgets/app_shimmer.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
@@ -128,6 +129,14 @@ class AppointmentCard extends StatelessWidget {
   }
 
   Widget _buildActionData() {
+    if (isLoading) {
+      return AppShimmer.rounded(
+        height: 16.h,
+        width: 60.w,
+        borderRadius: 4.r,
+      );
+    }
+
     if (showConfirm) {
       return GestureDetector(
         onTap: onConfirm,

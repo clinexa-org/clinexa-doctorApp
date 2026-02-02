@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/dashboard_stats_entity.dart';
-import '../../data/models/dashboard_stats_model.dart';
+
 import '../../domain/usecases/get_dashboard_stats_usecase.dart';
 import '../../../doctor_appointments/domain/entities/doctor_appointment_entity.dart';
 import '../../../doctor_appointments/domain/usecases/get_doctor_appointments_usecase.dart';
@@ -19,11 +19,12 @@ class DashboardCubit extends Cubit<DashboardState> {
   Future<void> loadDashboard() async {
     emit(state.copyWith(status: DashboardStatus.loading));
 
-    // Get today's date
+    // Get current month
+    final currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-    // Fetch stats
-    final statsResult = await getDashboardStatsUseCase();
+    // Fetch monthly stats
+    final statsResult = await getDashboardStatsUseCase(month: currentMonth);
 
     // Check for stats failure
     if (statsResult.isLeft()) {
@@ -35,10 +36,10 @@ class DashboardCubit extends Cubit<DashboardState> {
       return;
     }
 
-    // Fetch today's appointments
+    // Fetch today's appointments (for the list)
     final appointmentsResult = await getDoctorAppointmentsUseCase(date: today);
 
-    // Extract data with proper types
+    // Extract data
     DashboardStatsEntity? stats;
     statsResult.fold((l) => null, (r) => stats = r);
 
@@ -48,24 +49,8 @@ class DashboardCubit extends Cubit<DashboardState> {
       (r) => appointments = r,
     );
 
-    // Override stats with client-side calculations based on today's appointments
-    if (stats != null) {
-      final pendingCount = appointments
-          .where((a) =>
-              a.status.toLowerCase() == 'pending' ||
-              a.status.toLowerCase() == 'confirmed')
-          .length;
-      final completedCount = appointments
-          .where((a) => a.status.toLowerCase() == 'completed')
-          .length;
-
-      stats = DashboardStatsModel(
-        todayAppointments: appointments.length,
-        pendingAppointments: pendingCount,
-        completedAppointments: completedCount,
-        totalPatients: stats!.totalPatients,
-      );
-    }
+    // We no longer override stats with local calculations,
+    // because we want THE MONTHLY values from the server.
 
     emit(state.copyWith(
       status: DashboardStatus.success,

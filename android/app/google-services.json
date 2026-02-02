@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "809087966415",
+    "project_id": "clinexa-patient",
+    "storage_bucket": "clinexa-patient.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809087966415:android:31b1c9473c86455b24ebba",
+        "android_client_info": {
+          "package_name": "com.clinexa.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfvFDI0N0l5Q8Yd5xwn23vWAqoLyxKqXU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809087966415:android:e2bddc81c3026ed124ebba",
+        "android_client_info": {
+          "package_name": "com.clinexa.doctor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfvFDI0N0l5Q8Yd5xwn23vWAqoLyxKqXU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

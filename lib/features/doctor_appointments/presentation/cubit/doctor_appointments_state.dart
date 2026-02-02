@@ -20,12 +20,16 @@ class DoctorAppointmentsState extends Equatable {
   final List<DoctorAppointmentEntity> appointments;
   final String? errorMessage;
   final String? actionAppointmentId;
+  final String? filterDate;
+  final String? filterSearch;
 
   const DoctorAppointmentsState({
     this.status = DoctorAppointmentsStatus.initial,
     this.appointments = const [],
     this.errorMessage,
     this.actionAppointmentId,
+    this.filterDate,
+    this.filterSearch,
   });
 
   DoctorAppointmentsState copyWith({
@@ -33,12 +37,18 @@ class DoctorAppointmentsState extends Equatable {
     List<DoctorAppointmentEntity>? appointments,
     String? errorMessage,
     String? actionAppointmentId,
+    String? filterDate,
+    String? filterSearch,
+    bool clearDate = false,
+    bool clearSearch = false,
   }) {
     return DoctorAppointmentsState(
       status: status ?? this.status,
       appointments: appointments ?? this.appointments,
       errorMessage: errorMessage,
       actionAppointmentId: actionAppointmentId,
+      filterDate: clearDate ? null : (filterDate ?? this.filterDate),
+      filterSearch: clearSearch ? null : (filterSearch ?? this.filterSearch),
     );
   }
 
@@ -55,6 +65,12 @@ class DoctorAppointmentsState extends Equatable {
       appointments.where((a) => a.status == 'cancelled').toList();
 
   @override
-  List<Object?> get props =>
-      [status, appointments, errorMessage, actionAppointmentId];
+  List<Object?> get props => [
+        status,
+        appointments,
+        errorMessage,
+        actionAppointmentId,
+        filterDate,
+        filterSearch,
+      ];
 }

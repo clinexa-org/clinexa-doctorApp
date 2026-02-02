@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/notification_service.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import 'auth_state.dart';
@@ -74,6 +75,14 @@ class AuthCubit extends Cubit<AuthState> {
               avatar:
                   verifiedSession.user?.avatar ?? cachedSession.user?.avatar,
             ));
+
+            // Initialize FCM notifications for cached session
+            final token = verifiedSession.token.isNotEmpty
+                ? verifiedSession.token
+                : cachedSession.token;
+            NotificationService.initialize(() async => token);
+            // Also explicitly register device token (in case already initialized)
+            NotificationService.registerDeviceToken(() async => token);
           });
         } else {
           emit(state.copyWith(status: AuthStatus.unauthenticated));
@@ -110,6 +119,11 @@ class AuthCubit extends Cubit<AuthState> {
           avatar: session.user?.avatar,
           clearError: true,
         ));
+
+        // Initialize FCM notifications after successful login
+        NotificationService.initialize(() async => session.token);
+        // Also explicitly register device token (in case already initialized)
+        NotificationService.registerDeviceToken(() async => session.token);
       },
     );
   }

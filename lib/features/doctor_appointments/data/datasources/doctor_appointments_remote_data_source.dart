@@ -6,6 +6,7 @@ import '../models/doctor_appointment_model.dart';
 abstract class DoctorAppointmentsRemoteDataSource {
   Future<ResponseModel<List<DoctorAppointmentModel>>> getDoctorAppointments({
     String? date,
+    String? search,
   });
   Future<ResponseModel<DoctorAppointmentModel>> confirmAppointment(String id);
   Future<ResponseModel<DoctorAppointmentModel>> completeAppointment(String id);
@@ -21,10 +22,15 @@ class DoctorAppointmentsRemoteDataSourceImpl
   @override
   Future<ResponseModel<List<DoctorAppointmentModel>>> getDoctorAppointments({
     String? date,
+    String? search,
   }) async {
+    final queryParameters = <String, dynamic>{};
+    if (date != null) queryParameters['date'] = date;
+    if (search != null && search.isNotEmpty) queryParameters['search'] = search;
+
     final response = await apiClient.get(
       ApiEndpoints.appointmentsDoctor,
-      queryParameters: date != null ? {'date': date} : null,
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
     );
     return ResponseModel.fromMap(
       response.data,

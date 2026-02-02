@@ -10,7 +10,9 @@ import '../../../../core/utils/toast_helper.dart';
 import '../../domain/entities/prescription_entity.dart';
 import '../cubit/prescriptions_cubit.dart';
 import '../cubit/prescriptions_state.dart';
+import '../widgets/prescription_shimmer.dart';
 import 'create_prescription_page.dart';
+import 'prescription_details_page.dart';
 
 class PrescriptionsPage extends StatefulWidget {
   const PrescriptionsPage({super.key});
@@ -66,7 +68,11 @@ class _PrescriptionsPageState extends State<PrescriptionsPage> {
             child: const Icon(Iconsax.add, color: Colors.white),
           ),
           body: isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? ListView.builder(
+                  padding: EdgeInsets.all(16.w),
+                  itemCount: 5,
+                  itemBuilder: (context, index) => const PrescriptionShimmer(),
+                )
               : state.prescriptions.isEmpty
                   ? _buildEmptyState()
                   : RefreshIndicator(
@@ -116,7 +122,6 @@ class _PrescriptionsPageState extends State<PrescriptionsPage> {
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16.r),
@@ -128,86 +133,100 @@ class _PrescriptionsPageState extends State<PrescriptionsPage> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  prescription.patientName,
-                  style: AppTextStyles.interSemiBoldw600F16.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              Text(
-                dateFormat.format(prescription.createdAt),
-                style: AppTextStyles.interRegularw400F12.copyWith(
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
+      child: InkWell(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PrescriptionDetailsPage(prescription: prescription),
           ),
-          SizedBox(height: 12.h),
-
-          // Diagnosis
-          Row(
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Iconsax.health, size: 16.sp, color: AppColors.primary),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: Text(
-                  prescription.diagnosis,
-                  style: AppTextStyles.interRegularw400F14.copyWith(
-                    color: AppColors.textSecondary,
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      prescription.patientName,
+                      style: AppTextStyles.interSemiBoldw600F16.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-
-          // Medications count
-          Row(
-            children: [
-              Icon(Iconsax.hospital, size: 16.sp, color: AppColors.textMuted),
-              SizedBox(width: 8.w),
-              Text(
-                '${prescription.medications.length} medication(s)',
-                style: AppTextStyles.interRegularw400F14.copyWith(
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-
-          // Notes if present
-          if (prescription.notes != null && prescription.notes!.isNotEmpty) ...[
-            SizedBox(height: 8.h),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Iconsax.note, size: 16.sp, color: AppColors.textMuted),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    prescription.notes!,
+                  Text(
+                    dateFormat.format(prescription.createdAt),
                     style: AppTextStyles.interRegularw400F12.copyWith(
                       color: AppColors.textMuted,
-                      fontStyle: FontStyle.italic,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+
+              // Diagnosis
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Iconsax.health, size: 16.sp, color: AppColors.primary),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Diagnosis: ${prescription.diagnosis}',
+                      style: AppTextStyles.interRegularw400F14.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+
+              // Medications count
+              Row(
+                children: [
+                  Icon(Iconsax.hospital,
+                      size: 16.sp, color: AppColors.textMuted),
+                  SizedBox(width: 8.w),
+                  Text(
+                    '${prescription.medications.length} medication(s)',
+                    style: AppTextStyles.interRegularw400F14.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Notes if present
+              if (prescription.notes != null &&
+                  prescription.notes!.isNotEmpty) ...[
+                SizedBox(height: 8.h),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Iconsax.note, size: 16.sp, color: AppColors.textMuted),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        prescription.notes!,
+                        style: AppTextStyles.interRegularw400F12.copyWith(
+                          color: AppColors.textMuted,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -11,6 +11,7 @@ import '../../../../core/utils/toast_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../cubit/doctor_profile_cubit.dart';
 import '../cubit/doctor_profile_state.dart';
+import '../widgets/profile_shimmer.dart';
 
 class DoctorProfilePage extends StatefulWidget {
   const DoctorProfilePage({super.key});
@@ -61,7 +62,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
             ],
           ),
           body: isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const ProfileShimmer()
               : profile == null
                   ? _buildEmptyState()
                   : SafeArea(

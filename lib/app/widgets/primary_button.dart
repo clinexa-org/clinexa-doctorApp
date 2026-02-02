@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/localization/app_localizations.dart';
+import 'app_shimmer.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -48,13 +49,17 @@ class PrimaryButton extends StatelessWidget {
           elevation: 0,
         ),
         child: isLoading
-            ? SizedBox(
-                width: 20.w,
-                height: 20.h,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppShimmer.circular(size: 18.r),
+                  SizedBox(width: 8.w),
+                  AppShimmer.rounded(
+                    height: 14.h,
+                    width: 80.w,
+                    borderRadius: 4.r,
+                  ),
+                ],
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,

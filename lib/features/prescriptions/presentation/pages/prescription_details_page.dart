@@ -242,12 +242,14 @@ class PrescriptionDetailsPage extends StatelessWidget {
             label: 'Dosage',
             value: medication.dosage,
           ),
-          SizedBox(height: 8.h),
-          _buildMedicationDetail(
-            icon: Iconsax.repeat,
-            label: 'Frequency',
-            value: medication.frequency,
-          ),
+          if (medication.frequency.isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            _buildMedicationDetail(
+              icon: Iconsax.repeat,
+              label: 'Frequency',
+              value: medication.frequency,
+            ),
+          ],
           if (medication.duration.isNotEmpty) ...[
             SizedBox(height: 8.h),
             _buildMedicationDetail(

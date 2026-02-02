@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pretty_bloc_observer/pretty_bloc_observer.dart';
 import 'package:toastification/toastification.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'app/router/app_router.dart';
 import 'app/theme/app_colors.dart';
@@ -23,11 +25,26 @@ void main() async {
   Bloc.observer = PrettyBlocObserver();
   await CacheHelper.init();
 
+  // Initialize Firebase
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyBfvFDI0N0l5Q8Yd5xwn23vWAqoLyxKqXU',
+        appId: '1:809087966415:android:e2bddc81c3026ed124ebba',
+        messagingSenderId: '809087966415',
+        projectId: 'clinexa-patient',
+        storageBucket: 'clinexa-patient.firebasestorage.app',
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
+
   const isProd = bool.fromEnvironment('dart.vm.product');
   try {
     await Env.load(isProd ? EnvFile.prod : EnvFile.dev);
     await configureDependencies(isProd: isProd);
-  } catch (e) {   
+  } catch (e) {
     debugPrint('Init Failed: $e');
   }
 

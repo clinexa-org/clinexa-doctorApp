@@ -13,9 +13,10 @@ class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, DashboardStatsEntity>> getDashboardStats() async {
+  Future<Either<Failure, DashboardStatsEntity>> getDashboardStats(
+      {String? month}) async {
     try {
-      final response = await remoteDataSource.getDashboardStats();
+      final response = await remoteDataSource.getDashboardStats(month: month);
       if (response.success && response.data != null) {
         return Right(response.data!);
       } else {

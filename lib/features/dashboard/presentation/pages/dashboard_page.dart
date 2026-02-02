@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/di/injection.dart';
+import '../../../../core/services/socket_service.dart';
+import '../../../../core/config/env.dart';
 import '../../../../core/utils/toast_helper.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../doctor_appointments/domain/entities/doctor_appointment_entity.dart';
+import '../../../doctor_appointments/presentation/cubit/doctor_appointments_cubit.dart';
 import '../../../doctor_appointments/presentation/pages/doctor_appointments_page.dart';
 import '../../../doctor_profile/presentation/pages/doctor_profile_page.dart';
 import '../../../prescriptions/presentation/pages/prescriptions_page.dart';
@@ -15,6 +23,8 @@ import '../cubit/dashboard_state.dart';
 import '../widgets/home_bottom_nav_bar.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/today_appointment_card.dart';
+import '../widgets/dashboard_stats_shimmer.dart';
+import '../widgets/today_appointment_card_shimmer.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -58,10 +68,39 @@ class _DashboardContent extends StatefulWidget {
 }
 
 class _DashboardContentState extends State<_DashboardContent> {
+  late SocketService _socketService;
+
   @override
   void initState() {
     super.initState();
     context.read<DashboardCubit>().loadDashboard();
+    _initializeSocketService();
+  }
+
+  void _initializeSocketService() {
+    _socketService = sl<SocketService>();
+    final authState = context.read<AuthCubit>().state;
+
+    if (authState.token != null && authState.token!.isNotEmpty) {
+      _socketService.connect(Env.baseUrl, authState.token!);
+      _socketService.listenForDoctorEvents(
+        onAppointmentCreated: (data) {
+          // Refresh appointments when a new one is booked
+          context.read<DoctorAppointmentsCubit>().getAppointments();
+          context.read<DashboardCubit>().loadDashboard();
+          ToastHelper.showSuccess(
+            context: context,
+            message: 'New appointment booked!',
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _socketService.removeListeners();
+    super.dispose();
   }
 
   @override
@@ -82,13 +121,31 @@ class _DashboardContentState extends State<_DashboardContent> {
           backgroundColor: AppColors.background,
           appBar: AppBar(
             backgroundColor: AppColors.background,
-            title: Text(
-              'Dashboard',
-              style: AppTextStyles.interSemiBoldw600F20.copyWith(
-                color: AppColors.textPrimary,
-              ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dashboard',
+                  style: AppTextStyles.interSemiBoldw600F20.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Monthly Overview - ${DateFormat('MMMM').format(DateTime.now())}',
+                  style: AppTextStyles.interRegularw400F12.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
             ),
             actions: [
+              // Notifications Icon
+              IconButton(
+                onPressed: () => context.push(RouteNames.inbox),
+                icon: const Icon(Iconsax.notification,
+                    color: AppColors.textPrimary),
+              ),
+              // Refresh Icon
               IconButton(
                 onPressed: () =>
                     context.read<DashboardCubit>().refreshDashboard(),
@@ -96,39 +153,47 @@ class _DashboardContentState extends State<_DashboardContent> {
               ),
             ],
           ),
-          body: isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                  onRefresh: () =>
-                      context.read<DashboardCubit>().refreshDashboard(),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 20.h),
+          body: RefreshIndicator(
+            onRefresh: () => context.read<DashboardCubit>().refreshDashboard(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20.h),
 
-                        // Stats Grid
-                        if (state.stats != null) ...[
-                          _buildStatsGrid(state),
-                          SizedBox(height: 32.h),
-                        ],
+                  // Stats Grid
+                  isLoading
+                      ? const DashboardStatsShimmer()
+                      : state.stats != null
+                          ? _buildStatsGrid(state)
+                          : const SizedBox.shrink(),
 
-                        // Today's Appointments Section
-                        Text(
-                          "Today's Appointments",
-                          style: AppTextStyles.interSemiBoldw600F18.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        SizedBox(height: 16.h),
-                        _buildTodayAppointments(state.todayAppointments),
-                        SizedBox(height: 40.h),
-                      ],
+                  SizedBox(height: 32.h),
+
+                  // Today's Appointments Section
+                  Text(
+                    "Today's Appointments",
+                    style: AppTextStyles.interSemiBoldw600F18.copyWith(
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                ),
+                  SizedBox(height: 16.h),
+                  isLoading
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: 3,
+                          itemBuilder: (context, index) =>
+                              const TodayAppointmentCardShimmer(),
+                        )
+                      : _buildTodayAppointments(state.todayAppointments),
+                  SizedBox(height: 40.h),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
@@ -144,7 +209,7 @@ class _DashboardContentState extends State<_DashboardContent> {
       childAspectRatio: 1.3,
       children: [
         StatCard(
-          title: 'Today',
+          title: 'This Month',
           value: state.stats!.todayAppointments.toString(),
           icon: Iconsax.calendar_1,
           color: AppColors.primary,

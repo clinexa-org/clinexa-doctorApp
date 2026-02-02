@@ -15,9 +15,13 @@ class DoctorAppointmentsRepositoryImpl implements DoctorAppointmentsRepository {
   @override
   Future<Either<Failure, List<DoctorAppointmentEntity>>> getDoctorAppointments({
     String? date,
+    String? search,
   }) async {
     try {
-      final response = await remoteDataSource.getDoctorAppointments(date: date);
+      final response = await remoteDataSource.getDoctorAppointments(
+        date: date,
+        search: search,
+      );
       if (response.success) {
         return Right(response.data ?? []);
       } else {

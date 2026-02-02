@@ -13,6 +13,7 @@ import '../../domain/entities/working_hours_entity.dart';
 import '../cubit/clinic_cubit.dart';
 import '../cubit/clinic_state.dart';
 import '../widgets/day_schedule_tile.dart';
+import '../widgets/settings_shimmer.dart';
 
 class WorkingHoursPage extends StatefulWidget {
   const WorkingHoursPage({super.key});
@@ -213,7 +214,7 @@ class _WorkingHoursPageState extends State<WorkingHoursPage> {
             iconTheme: const IconThemeData(color: AppColors.textPrimary),
           ),
           body: isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const SettingsShimmer()
               : Column(
                   children: [
                     // Scrollable content

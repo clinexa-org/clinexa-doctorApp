@@ -20,10 +20,26 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
     required this.cancelAppointmentUseCase,
   }) : super(const DoctorAppointmentsState());
 
-  Future<void> getAppointments({String? date}) async {
-    emit(state.copyWith(status: DoctorAppointmentsStatus.loading));
+  Future<void> clearFilters() async {
+    emit(state.copyWith(
+      clearDate: true,
+      clearSearch: true,
+    ));
+    // Re-fetch appointments without filters
+    await getAppointments(date: null, search: null);
+  }
 
-    final result = await getDoctorAppointmentsUseCase(date: date);
+  Future<void> getAppointments({String? date, String? search}) async {
+    emit(state.copyWith(
+      status: DoctorAppointmentsStatus.loading,
+      filterDate: date ?? state.filterDate,
+      filterSearch: search ?? state.filterSearch,
+    ));
+
+    final result = await getDoctorAppointmentsUseCase(
+      date: date ?? state.filterDate,
+      search: search ?? state.filterSearch,
+    );
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -107,8 +123,30 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
         errorMessage: failure.message,
       )),
       (_) {
-        final updatedList =
-            state.appointments.where((a) => a.id != id).toList();
+        final updatedList = state.appointments.map((a) {
+          if (a.id == id) {
+            // Create a new instance with cancelled status
+            // We need to cast or construct based on specific type if needed,
+            // but since DoctorAppointmentModel extends Entity, we can construct the Model
+            // verifying we have all fields.
+            // Actually, we can just use the Model constructor which we can't access easily without import...
+            // Wait, we imported DoctorAppointmentModel.
+            return DoctorAppointmentModel(
+              id: a.id,
+              date: a.date,
+              time: a.time,
+              reason: a.reason,
+              status: 'cancelled',
+              patientId: a.patientId,
+              patientName: a.patientName,
+              patientPhone: a.patientPhone,
+              patientAvatar: a.patientAvatar,
+              notes: a.notes,
+            );
+          }
+          return a;
+        }).toList();
+
         emit(state.copyWith(
           status: DoctorAppointmentsStatus.cancelSuccess,
           appointments: updatedList,

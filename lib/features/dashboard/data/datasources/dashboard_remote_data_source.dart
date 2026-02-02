@@ -4,7 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../models/dashboard_stats_model.dart';
 
 abstract class DashboardRemoteDataSource {
-  Future<ResponseModel<DashboardStatsModel>> getDashboardStats();
+  Future<ResponseModel<DashboardStatsModel>> getDashboardStats({String? month});
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
@@ -13,8 +13,17 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   DashboardRemoteDataSourceImpl(this.apiClient);
 
   @override
-  Future<ResponseModel<DashboardStatsModel>> getDashboardStats() async {
-    final response = await apiClient.get(ApiEndpoints.doctorStats);
+  Future<ResponseModel<DashboardStatsModel>> getDashboardStats(
+      {String? month}) async {
+    final Map<String, dynamic> queryParameters = {};
+    if (month != null) {
+      queryParameters['month'] = month;
+    }
+
+    final response = await apiClient.get(
+      ApiEndpoints.doctorStats,
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
     return ResponseModel.fromMap(
       response.data,
       (data) => DashboardStatsModel.fromJson(data['stats'] ?? data),

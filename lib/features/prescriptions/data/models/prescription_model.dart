@@ -79,11 +79,13 @@ class PrescriptionModel extends PrescriptionEntity {
       patientId = patientData;
     }
 
-    // Handle appointment ID
+    // Handle appointment ID and reason
     String appointmentId = '';
+    String? appointmentReason;
     final appointmentData = json['appointment_id'];
     if (appointmentData is Map<String, dynamic>) {
       appointmentId = appointmentData['_id'] ?? '';
+      appointmentReason = appointmentData['reason'];
     } else if (appointmentData is String) {
       appointmentId = appointmentData;
     }
@@ -100,7 +102,7 @@ class PrescriptionModel extends PrescriptionEntity {
       appointmentId: appointmentId,
       patientId: patientId,
       patientName: patientName,
-      diagnosis: json['diagnosis'] ?? '',
+      diagnosis: json['diagnosis'] ?? appointmentReason ?? '',
       medications: medications,
       notes: json['notes'],
       createdAt: json['createdAt'] != null

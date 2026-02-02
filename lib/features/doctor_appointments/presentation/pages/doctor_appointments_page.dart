@@ -14,6 +14,8 @@ import '../../domain/entities/doctor_appointment_entity.dart';
 import '../cubit/doctor_appointments_cubit.dart';
 import '../cubit/doctor_appointments_state.dart';
 import '../widgets/appointment_card.dart';
+import '../widgets/appointment_card_shimmer.dart';
+import '../../../../core/utils/debouncer.dart';
 
 class DoctorAppointmentsPage extends StatefulWidget {
   const DoctorAppointmentsPage({super.key});
@@ -26,6 +28,7 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  final Debouncer _debouncer = Debouncer(milliseconds: 500);
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
@@ -82,7 +86,15 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
                 // Date header is now handled inside the list grouping
                 Expanded(
                   child: isLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? ListView.builder(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 8.h),
+                          itemCount: 5,
+                          itemBuilder: (context, index) => Padding(
+                            padding: EdgeInsets.only(bottom: 16.h),
+                            child: const AppointmentCardShimmer(),
+                          ),
+                        )
                       : TabBarView(
                           controller: _tabController,
                           children: [
@@ -152,7 +164,7 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
   }
 
   Widget _buildTabBar(DoctorAppointmentsState state) {
-    return Container(
+    return SizedBox(
       height: 40.h,
       width: double.infinity,
       child: TabBar(
@@ -162,14 +174,14 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
         tabAlignment: TabAlignment.start,
         dividerColor: Colors.transparent,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(width: 2.0, color: AppColors.primary),
+          borderSide: const BorderSide(width: 2.0, color: AppColors.primary),
           insets: EdgeInsets.symmetric(horizontal: 0.w),
         ),
         labelColor: Colors.white,
         unselectedLabelColor: AppColors.textMuted,
         labelStyle: AppTextStyles.interMediumw500F14,
         unselectedLabelStyle: AppTextStyles.interMediumw500F14,
-        tabs: [
+        tabs: const [
           Tab(text: 'Pending'),
           Tab(text: 'Confirmed'),
           Tab(text: 'Completed'),
@@ -187,14 +199,82 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
       ),
       child: TextField(
         controller: _searchController,
-        style: TextStyle(color: AppColors.textPrimary),
+        style: const TextStyle(color: AppColors.textPrimary),
+        textInputAction: TextInputAction.search,
+        onChanged: (value) {
+          _debouncer.run(() {
+            context
+                .read<DoctorAppointmentsCubit>()
+                .getAppointments(search: value);
+          });
+          setState(() {}); // specific to update clear button visibility
+        },
+        onSubmitted: (value) {
+          _debouncer.dispose(); // Cancel any pending debounce
+          context
+              .read<DoctorAppointmentsCubit>()
+              .getAppointments(search: value);
+        },
         decoration: InputDecoration(
           hintText: 'Search patient name...',
-          hintStyle: TextStyle(color: AppColors.textMuted),
+          hintStyle: const TextStyle(color: AppColors.textMuted),
           prefixIcon: Icon(Iconsax.search_normal,
               size: 20.sp, color: AppColors.textMuted),
-          suffixIcon: Icon(Iconsax.calendar_1,
-              size: 20.sp, color: AppColors.textPrimary),
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_searchController.text.isNotEmpty ||
+                  context.read<DoctorAppointmentsCubit>().state.filterDate !=
+                      null)
+                IconButton(
+                  icon: Icon(Icons.close,
+                      size: 20.sp, color: AppColors.textMuted),
+                  onPressed: () {
+                    _searchController.clear();
+                    context.read<DoctorAppointmentsCubit>().clearFilters();
+                    setState(() {});
+                  },
+                ),
+              GestureDetector(
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2024),
+                    lastDate: DateTime(2030),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.dark(
+                            primary: AppColors.primary,
+                            onPrimary: Colors.white,
+                            surface: AppColors.surfaceElevated,
+                            onSurface: AppColors.textPrimary,
+                          ),
+                          dialogBackgroundColor: AppColors.surface,
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (date != null) {
+                    // Format date as YYYY-MM-DD
+                    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+                    if (context.mounted) {
+                      context
+                          .read<DoctorAppointmentsCubit>()
+                          .getAppointments(date: formattedDate);
+                    }
+                  }
+                },
+                child: Padding(
+                  padding: EdgeInsets.only(right: 16.w),
+                  child: Icon(Iconsax.calendar_1,
+                      size: 20.sp, color: AppColors.textPrimary),
+                ),
+              ),
+            ],
+          ),
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -336,8 +416,8 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
         ),
         content: TextField(
           controller: reasonController,
-          style: TextStyle(color: AppColors.textPrimary),
-          decoration: InputDecoration(
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: const InputDecoration(
             hintText: 'Reason (optional)',
             hintStyle: TextStyle(color: AppColors.textMuted),
             enabledBorder: UnderlineInputBorder(

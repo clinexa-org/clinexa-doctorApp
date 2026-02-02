@@ -5,6 +5,7 @@ import '../entities/doctor_appointment_entity.dart';
 abstract class DoctorAppointmentsRepository {
   Future<Either<Failure, List<DoctorAppointmentEntity>>> getDoctorAppointments({
     String? date,
+    String? search,
   });
   Future<Either<Failure, DoctorAppointmentEntity>> confirmAppointment(
       String id);

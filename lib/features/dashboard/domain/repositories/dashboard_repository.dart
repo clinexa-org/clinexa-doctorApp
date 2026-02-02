@@ -3,5 +3,6 @@ import '../../../../core/errors/failures.dart';
 import '../entities/dashboard_stats_entity.dart';
 
 abstract class DashboardRepository {
-  Future<Either<Failure, DashboardStatsEntity>> getDashboardStats();
+  Future<Either<Failure, DashboardStatsEntity>> getDashboardStats(
+      {String? month});
 }

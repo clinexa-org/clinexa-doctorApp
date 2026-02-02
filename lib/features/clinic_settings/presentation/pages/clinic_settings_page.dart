@@ -11,6 +11,7 @@ import '../../../../app/widgets/primary_button.dart';
 import '../../../../core/utils/toast_helper.dart';
 import '../cubit/clinic_cubit.dart';
 import '../cubit/clinic_state.dart';
+import '../widgets/settings_shimmer.dart';
 
 class ClinicSettingsPage extends StatefulWidget {
   const ClinicSettingsPage({super.key});
@@ -115,7 +116,7 @@ class _ClinicSettingsPageState extends State<ClinicSettingsPage> {
             iconTheme: const IconThemeData(color: AppColors.textPrimary),
           ),
           body: isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const SettingsShimmer()
               : SafeArea(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),

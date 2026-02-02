@@ -8,7 +8,10 @@ class GetDoctorAppointmentsUseCase {
 
   const GetDoctorAppointmentsUseCase(this.repository);
 
-  Future<Either<Failure, List<DoctorAppointmentEntity>>> call({String? date}) {
-    return repository.getDoctorAppointments(date: date);
+  Future<Either<Failure, List<DoctorAppointmentEntity>>> call({
+    String? date,
+    String? search,
+  }) {
+    return repository.getDoctorAppointments(date: date, search: search);
   }
 }

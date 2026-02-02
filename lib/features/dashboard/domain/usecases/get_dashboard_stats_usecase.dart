@@ -7,6 +7,6 @@ class GetDashboardStatsUseCase {
   final DashboardRepository repository;
   const GetDashboardStatsUseCase(this.repository);
 
-  Future<Either<Failure, DashboardStatsEntity>> call() =>
-      repository.getDashboardStats();
+  Future<Either<Failure, DashboardStatsEntity>> call({String? month}) =>
+      repository.getDashboardStats(month: month);
 }
