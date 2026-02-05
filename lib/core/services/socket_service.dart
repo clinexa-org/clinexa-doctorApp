@@ -20,9 +20,9 @@ class SocketService {
   void connect(String baseUrl, String token) {
     // Vercel serverless does not support persistent WebSockets
     // We disable this to prevent continuous error logs
-    debugPrint(
-        'SocketService: Socket disabled for Vercel deployment (using Push Notifications instead)');
-    return;
+    // debugPrint(
+    //     'SocketService: Socket disabled for Vercel deployment (using Push Notifications instead)');
+    // return;
 
     if (_socket != null && _isConnected) {
       debugPrint('SocketService: Already connected');
@@ -35,7 +35,7 @@ class SocketService {
     _socket = IO.io(
       socketUrl,
       IO.OptionBuilder()
-          .setTransports(['websocket', 'polling'])
+          .setTransports(['polling'])
           .setAuth({'token': token})
           .disableAutoConnect()
           .enableForceNew()

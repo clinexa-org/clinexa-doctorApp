@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -13,6 +14,7 @@ class NotificationService {
       FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+  static final FirebaseDatabase _database = FirebaseDatabase.instance;
 
   static bool _initialized = false;
 
@@ -130,17 +132,58 @@ class NotificationService {
     }
   }
 
-  /// Display a local notification when a message is received in foreground.
-  static void showLocalNotification(RemoteMessage message) {
-    final notification = message.notification;
-    final android = message.notification?.android;
+  /// Start listening to real-time notifications from Firebase RTDB
+  /// This replaces Socket.io for foreground updates on Vercel
+  static void listenToRealtimeNotifications(String userId) {
+    if (userId.isEmpty) return;
 
-    if (notification != null) {
-      _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+    debugPrint(
+        'NotificationService: Listening to RTDB notifications for user $userId');
+
+    final ref = _database.ref('notifications/$userId');
+
+    // Listen for new notifications added
+    ref.limitToLast(1).onChildAdded.listen((event) {
+      if (event.snapshot.value == null) return;
+
+      try {
+        final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+
+        // Check if notification is recent (within last minute) to avoid showing old ones
+        // or check 'read' status if you implement that
+        final createdAtStr = data['createdAt'];
+        if (createdAtStr != null) {
+          final createdAt = DateTime.parse(createdAtStr);
+          if (DateTime.now().difference(createdAt).inMinutes > 2) {
+            return; // Skip old notifications
+          }
+        }
+
+        final title = data['title'] ?? 'New Notification';
+        final body = data['body'] ?? '';
+
+        debugPrint('NotificationService: Received RTDB notification: $title');
+
+        _showLocalNotification(
+            title,
+            body,
+            data['data'] != null
+                ? Map<String, dynamic>.from(data['data'])
+                : null);
+      } catch (e) {
+        debugPrint('NotificationService: Error parsing RTDB data: $e');
+      }
+    });
+  }
+
+  /// Display a local notification (helper)
+  static void _showLocalNotification(String title, String body,
+      [Map<String, dynamic>? payload]) {
+    _localNotifications.show(
+        DateTime.now().millisecond, // Unique ID
+        title,
+        body,
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'high_importance_channel',
             'High Importance Notifications',
@@ -148,15 +191,22 @@ class NotificationService {
                 'This channel is used for important notifications.',
             importance: Importance.max,
             priority: Priority.high,
-            icon: android?.smallIcon ?? '@mipmap/ic_launcher',
           ),
-          iOS: const DarwinNotificationDetails(
+          iOS: DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
           ),
         ),
-      );
+        payload: payload.toString());
+  }
+
+  /// Display a local notification when a message is received in foreground.
+  static void showLocalNotification(RemoteMessage message) {
+    final notification = message.notification;
+    if (notification != null) {
+      _showLocalNotification(
+          notification.title ?? '', notification.body ?? '', message.data);
     }
   }
 
@@ -169,5 +219,6 @@ class NotificationService {
   /// Reset initialization state (call on logout).
   static void reset() {
     _initialized = false;
+    // Note: Stream subscriptions should ideally be cancelled here if stored
   }
 }

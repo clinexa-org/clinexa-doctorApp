@@ -148,7 +148,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                     BlocBuilder<DoctorAppointmentsCubit,
                         DoctorAppointmentsState>(
                       builder: (context, appointmentsState) {
-                        // Filter appointments: Only show COMPLETED appointments as per user request
+                        // Filter appointments: Only show COMPLETED appointments
                         final appointments = appointmentsState.appointments
                             .where((a) => a.status.toLowerCase() == 'completed')
                             .toList();
@@ -185,7 +185,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                                 fillColor: AppColors.surfaceElevated,
                               ),
                               hint: Text(
-                                'Select Completed Appointment',
+                                'Select Appointment',
                                 style: AppTextStyles.interRegularw400F14
                                     .copyWith(color: AppColors.textMuted),
                               ),

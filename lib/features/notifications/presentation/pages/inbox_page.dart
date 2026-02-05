@@ -49,7 +49,7 @@ class _InboxContent extends StatelessWidget {
               if (state.unreadCount > 0) {
                 return TextButton(
                   onPressed: () {
-                    // Mark all as read - could add this functionality
+                    context.read<NotificationsCubit>().markAllAsRead();
                   },
                   child: Text(
                     'Mark all read',

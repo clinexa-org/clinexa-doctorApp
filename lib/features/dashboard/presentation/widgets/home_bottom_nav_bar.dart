@@ -4,6 +4,9 @@ import 'package:iconsax/iconsax.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../notifications/presentation/cubit/notifications_cubit.dart';
+import '../../../notifications/presentation/cubit/notifications_state.dart';
 
 class HomeBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -38,15 +41,37 @@ class HomeBottomNavBar extends StatelessWidget {
         showUnselectedLabels: true,
         selectedLabelStyle: AppTextStyles.interSemiBoldw600F12,
         unselectedLabelStyle: AppTextStyles.interMediumw500F12,
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Iconsax.home),
             activeIcon: Icon(Iconsax.home_15),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Iconsax.calendar),
-            activeIcon: Icon(Iconsax.calendar_1),
+            icon: BlocBuilder<NotificationsCubit, NotificationsState>(
+              builder: (context, state) {
+                final hasUnread = state.notifications.any((n) => !n.isRead);
+                return Stack(
+                  children: [
+                    const Icon(Iconsax.calendar),
+                    if (hasUnread)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 8.w,
+                          height: 8.w,
+                          decoration: const BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            activeIcon: const Icon(Iconsax.calendar_1),
             label: 'Appointments',
           ),
           BottomNavigationBarItem(

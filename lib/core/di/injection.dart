@@ -65,6 +65,7 @@ import '../../features/notifications/data/repositories/notifications_repository_
 import '../../features/notifications/domain/repositories/notifications_repository.dart';
 import '../../features/notifications/domain/usecases/get_notifications_usecase.dart';
 import '../../features/notifications/domain/usecases/mark_notification_read_usecase.dart';
+import '../../features/notifications/domain/usecases/mark_all_notifications_read_usecase.dart';
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 
 // Core Services
@@ -231,11 +232,13 @@ Future<void> configureDependencies({required bool isProd}) async {
 
   sl.registerLazySingleton(() => GetNotificationsUseCase(sl()));
   sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl()));
+  sl.registerLazySingleton(() => MarkAllNotificationsReadUseCase(sl()));
 
   sl.registerFactory<NotificationsCubit>(
     () => NotificationsCubit(
       getNotificationsUseCase: sl(),
       markNotificationReadUseCase: sl(),
+      markAllNotificationsReadUseCase: sl(),
     ),
   );
 }

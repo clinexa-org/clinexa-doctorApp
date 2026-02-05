@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+
+import '../../../../app/widgets/primary_button.dart';
+import '../../../../core/utils/toast_helper.dart';
+import '../cubit/doctor_appointments_cubit.dart';
+import '../cubit/doctor_appointments_state.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
@@ -19,62 +25,155 @@ class AppointmentDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Appointment Details',
-          style: AppTextStyles.interSemiBoldw600F18.copyWith(
-            color: AppColors.textPrimary,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPatientInfo(),
-            SizedBox(height: 24.h),
-            _buildAppointmentInfo(),
-            SizedBox(height: 24.h),
-            if (appointment.notes != null && appointment.notes!.isNotEmpty) ...[
-              SizedBox(height: 24.h),
-              _buildNotes(),
-            ],
-            SizedBox(height: 32.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        CreatePrescriptionPage(appointmentId: appointment.id),
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
-                child: Text(
-                  'Create Prescription',
-                  style: AppTextStyles.interSemiBoldw600F16,
-                ),
+    return BlocConsumer<DoctorAppointmentsCubit, DoctorAppointmentsState>(
+      listener: (context, state) {
+        if (state.status == DoctorAppointmentsStatus.confirmSuccess ||
+            state.status == DoctorAppointmentsStatus.completeSuccess ||
+            state.status == DoctorAppointmentsStatus.cancelSuccess) {
+          final message =
+              state.status == DoctorAppointmentsStatus.confirmSuccess
+                  ? 'Appointment confirmed'
+                  : state.status == DoctorAppointmentsStatus.completeSuccess
+                      ? 'Appointment completed'
+                      : 'Appointment cancelled';
+          ToastHelper.showSuccess(context: context, message: message);
+          context.pop();
+        } else if (state.status == DoctorAppointmentsStatus.actionFailure) {
+          ToastHelper.showError(
+            context: context,
+            message: state.errorMessage ?? 'Action failed',
+          );
+        }
+      },
+      builder: (context, state) {
+        final isActionLoading = state.actionAppointmentId == appointment.id &&
+            (state.status == DoctorAppointmentsStatus.confirming ||
+                state.status == DoctorAppointmentsStatus.completing ||
+                state.status == DoctorAppointmentsStatus.cancelling);
+
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: AppColors.background,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+              onPressed: () => context.pop(),
+            ),
+            title: Text(
+              'Appointment Details',
+              style: AppTextStyles.interSemiBoldw600F18.copyWith(
+                color: AppColors.textPrimary,
               ),
             ),
-          ],
+            centerTitle: true,
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPatientInfo(),
+                SizedBox(height: 24.h),
+                _buildAppointmentInfo(),
+                if (appointment.notes != null &&
+                    appointment.notes!.isNotEmpty) ...[
+                  SizedBox(height: 24.h),
+                  _buildNotes(),
+                ],
+                SizedBox(height: 32.h),
+
+                // Status Action Buttons
+                if (appointment.status.toLowerCase() == 'pending') ...[
+                  PrimaryButton(
+                    text: 'Confirm Appointment',
+                    onPressed: () => context
+                        .read<DoctorAppointmentsCubit>()
+                        .confirmAppointment(appointment.id),
+                    isLoading: isActionLoading &&
+                        state.status == DoctorAppointmentsStatus.confirming,
+                    backgroundColor: AppColors.success,
+                  ),
+                  SizedBox(height: 12.h),
+                  PrimaryButton(
+                    text: 'Cancel Appointment',
+                    onPressed: () => _showCancelDialog(context),
+                    isLoading: isActionLoading &&
+                        state.status == DoctorAppointmentsStatus.cancelling,
+                    backgroundColor: AppColors.error,
+                  ),
+                ] else if (appointment.status.toLowerCase() == 'confirmed') ...[
+                  PrimaryButton(
+                    text: 'Complete Appointment',
+                    onPressed: () => context
+                        .read<DoctorAppointmentsCubit>()
+                        .completeAppointment(appointment.id),
+                    isLoading: isActionLoading &&
+                        state.status == DoctorAppointmentsStatus.completing,
+                  ),
+                  SizedBox(height: 12.h),
+                  PrimaryButton(
+                    text: 'Cancel Appointment',
+                    onPressed: () => _showCancelDialog(context),
+                    isLoading: isActionLoading &&
+                        state.status == DoctorAppointmentsStatus.cancelling,
+                    backgroundColor: AppColors.error,
+                  ),
+                ],
+
+                if (appointment.status.toLowerCase() == 'completed') ...[
+                  PrimaryButton(
+                    text: 'Create Prescription',
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CreatePrescriptionPage(
+                            appointmentId: appointment.id),
+                      ),
+                    ),
+                  ),
+                ],
+                SizedBox(height: 40.h),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCancelDialog(BuildContext context) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: Text('Cancel Appointment',
+            style: AppTextStyles.interSemiBoldw600F18),
+        content: TextField(
+          controller: reasonController,
+          decoration: const InputDecoration(
+            hintText: 'Reason for cancellation (optional)',
+          ),
+          maxLines: 3,
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Back'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<DoctorAppointmentsCubit>().cancelAppointment(
+                    appointment.id,
+                    reason: reasonController.text.trim().isEmpty
+                        ? null
+                        : reasonController.text.trim(),
+                  );
+              Navigator.pop(dialogContext);
+            },
+            child: Text('Cancel', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
       ),
     );
   }

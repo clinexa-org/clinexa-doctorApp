@@ -19,6 +19,7 @@ import 'features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'features/doctor_appointments/presentation/cubit/doctor_appointments_cubit.dart';
 import 'features/doctor_profile/presentation/cubit/doctor_profile_cubit.dart';
 import 'features/prescriptions/presentation/cubit/prescriptions_cubit.dart';
+import 'features/notifications/presentation/cubit/notifications_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,6 +89,7 @@ class _DoctorAppState extends State<DoctorApp> {
             BlocProvider(create: (_) => sl<PrescriptionsCubit>()),
             BlocProvider(create: (_) => sl<DoctorProfileCubit>()),
             BlocProvider(create: (_) => sl<ClinicCubit>()),
+            BlocProvider(create: (_) => sl<NotificationsCubit>()),
           ],
           child: MaterialApp.router(
             title: 'Clinexa Doctor',

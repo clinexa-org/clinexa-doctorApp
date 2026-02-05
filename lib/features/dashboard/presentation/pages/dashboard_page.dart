@@ -18,6 +18,8 @@ import '../../../doctor_appointments/presentation/cubit/doctor_appointments_cubi
 import '../../../doctor_appointments/presentation/pages/doctor_appointments_page.dart';
 import '../../../doctor_profile/presentation/pages/doctor_profile_page.dart';
 import '../../../prescriptions/presentation/pages/prescriptions_page.dart';
+import '../../../notifications/presentation/cubit/notifications_cubit.dart';
+import '../../../notifications/presentation/cubit/notifications_state.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 import '../widgets/home_bottom_nav_bar.dart';
@@ -87,6 +89,7 @@ class _DashboardContentState extends State<_DashboardContent> {
         onAppointmentCreated: (data) {
           // Refresh appointments when a new one is booked
           context.read<DoctorAppointmentsCubit>().getAppointments();
+          context.read<NotificationsCubit>().loadNotifications();
           context.read<DashboardCubit>().loadDashboard();
           ToastHelper.showSuccess(
             context: context,
@@ -140,10 +143,33 @@ class _DashboardContentState extends State<_DashboardContent> {
             ),
             actions: [
               // Notifications Icon
-              IconButton(
-                onPressed: () => context.push(RouteNames.inbox),
-                icon: const Icon(Iconsax.notification,
-                    color: AppColors.textPrimary),
+              BlocBuilder<NotificationsCubit, NotificationsState>(
+                builder: (context, notificationState) {
+                  final hasUnread =
+                      notificationState.notifications.any((n) => !n.isRead);
+                  return Stack(
+                    children: [
+                      IconButton(
+                        onPressed: () => context.push(RouteNames.inbox),
+                        icon: const Icon(Iconsax.notification,
+                            color: AppColors.textPrimary),
+                      ),
+                      if (hasUnread)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            width: 10.w,
+                            height: 10.w,
+                            decoration: const BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
               // Refresh Icon
               IconButton(

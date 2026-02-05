@@ -81,8 +81,14 @@ class AuthCubit extends Cubit<AuthState> {
                 ? verifiedSession.token
                 : cachedSession.token;
             NotificationService.initialize(() async => token);
-            // Also explicitly register device token (in case already initialized)
+            // Also explicitly register device token
             NotificationService.registerDeviceToken(() async => token);
+            // Start listening to RTDB notifications
+            if (verifiedSession.user?.id != null ||
+                cachedSession.user?.id != null) {
+              NotificationService.listenToRealtimeNotifications(
+                  verifiedSession.user?.id ?? cachedSession.user?.id ?? '');
+            }
           });
         } else {
           emit(state.copyWith(status: AuthStatus.unauthenticated));
@@ -122,8 +128,12 @@ class AuthCubit extends Cubit<AuthState> {
 
         // Initialize FCM notifications after successful login
         NotificationService.initialize(() async => session.token);
-        // Also explicitly register device token (in case already initialized)
+        // Also explicitly register device token
         NotificationService.registerDeviceToken(() async => session.token);
+        // Start listening to RTDB notifications
+        if (session.user?.id != null) {
+          NotificationService.listenToRealtimeNotifications(session.user!.id);
+        }
       },
     );
   }

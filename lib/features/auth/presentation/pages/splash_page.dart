@@ -12,23 +12,36 @@ import '../widgets/auth_logo.dart';
 
 /// Splash screen that waits for auth initialization before navigating.
 /// This prevents the login screen "flash" when user has cached auth.
-class SplashPage extends StatelessWidget {
+class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuthState(context.read<AuthCubit>().state);
+    });
+  }
+
+  void _checkAuthState(AuthState state) {
+    if (state.status == AuthStatus.authenticatedFromCache ||
+        state.status == AuthStatus.authenticatedFromLogin) {
+      context.go(RouteNames.dashboard);
+    } else if (state.status == AuthStatus.unauthenticated) {
+      context.go(RouteNames.login);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        // Wait for auth check to complete, then navigate
-        if (state.status == AuthStatus.authenticatedFromCache ||
-            state.status == AuthStatus.authenticatedFromLogin) {
-          // User is authenticated, go to dashboard
-          context.go(RouteNames.dashboard);
-        } else if (state.status == AuthStatus.unauthenticated) {
-          // User needs to login
-          context.go(RouteNames.login);
-        }
-        // If status is 'initial', we're still checking - keep showing splash
+        _checkAuthState(state);
       },
       child: Scaffold(
         backgroundColor: AppColors.background,

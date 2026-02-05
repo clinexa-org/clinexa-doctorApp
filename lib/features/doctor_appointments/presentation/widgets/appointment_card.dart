@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
-import '../../../../app/widgets/app_shimmer.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
@@ -46,7 +45,6 @@ class AppointmentCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
               // Avatar
               Container(
                 width: 48.r,
@@ -120,9 +118,6 @@ class AppointmentCard extends StatelessWidget {
               _buildActionData(),
             ],
           ),
-          // Original Action Buttons (Confim/Cancel) logic hidden or moved?
-          // The design shows "Action Needed ->" or "Details >"
-          // We can map the "showConfirm" etc to these actions.
         ],
       ),
     );
@@ -130,11 +125,22 @@ class AppointmentCard extends StatelessWidget {
 
   Widget _buildActionData() {
     if (isLoading) {
-      return AppShimmer.rounded(
-        height: 16.h,
-        width: 60.w,
-        borderRadius: 4.r,
+      return SizedBox(
+        height: 16.r,
+        width: 16.r,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.w,
+          color: showConfirm
+              ? AppColors.success
+              : showComplete
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
+        ),
       );
+    }
+
+    if (onTap == null && !showConfirm && !showComplete) {
+      return const SizedBox.shrink();
     }
 
     if (showConfirm) {

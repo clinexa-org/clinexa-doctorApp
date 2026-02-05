@@ -2,15 +2,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/notification_model.dart';
 import '../../domain/usecases/get_notifications_usecase.dart';
 import '../../domain/usecases/mark_notification_read_usecase.dart';
+import '../../domain/usecases/mark_all_notifications_read_usecase.dart';
 import 'notifications_state.dart';
 
 class NotificationsCubit extends Cubit<NotificationsState> {
   final GetNotificationsUseCase getNotificationsUseCase;
   final MarkNotificationReadUseCase markNotificationReadUseCase;
+  final MarkAllNotificationsReadUseCase markAllNotificationsReadUseCase;
 
   NotificationsCubit({
     required this.getNotificationsUseCase,
     required this.markNotificationReadUseCase,
+    required this.markAllNotificationsReadUseCase,
   }) : super(const NotificationsState());
 
   Future<void> loadNotifications() async {
@@ -35,7 +38,10 @@ class NotificationsCubit extends Cubit<NotificationsState> {
 
     result.fold(
       (failure) {
-        // Silently fail, don't change UI state
+        emit(state.copyWith(
+          status: NotificationsStatus.failure,
+          errorMessage: failure.message,
+        ));
       },
       (_) {
         // Update local state to mark as read
@@ -52,6 +58,34 @@ class NotificationsCubit extends Cubit<NotificationsState> {
             );
           }
           return n;
+        }).toList();
+
+        emit(state.copyWith(notifications: updatedList));
+      },
+    );
+  }
+
+  Future<void> markAllAsRead() async {
+    final result = await markAllNotificationsReadUseCase();
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: NotificationsStatus.failure,
+          errorMessage: failure.message,
+        ));
+      },
+      (_) {
+        final updatedList = state.notifications.map((n) {
+          return NotificationModel(
+            id: n.id,
+            title: n.title,
+            body: n.body,
+            isRead: true,
+            createdAt: n.createdAt,
+            type: n.type,
+            referenceId: n.referenceId,
+          );
         }).toList();
 
         emit(state.copyWith(notifications: updatedList));
