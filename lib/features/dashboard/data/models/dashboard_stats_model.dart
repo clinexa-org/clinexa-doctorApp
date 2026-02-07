@@ -11,14 +11,13 @@ class DashboardStatsModel extends DashboardStatsEntity {
   factory DashboardStatsModel.fromJson(Map<String, dynamic> json) {
     return DashboardStatsModel(
       todayAppointments:
-          json['today_appointments'] ?? json['todayAppointments'] ?? 0,
+          json['appointments'] ?? json['today_appointments'] ?? 0,
       pendingAppointments:
-          json['pending_appointments'] ?? json['pendingAppointments'] ?? 0,
+          json['pending'] ?? json['pending_appointments'] ?? 0,
       completedAppointments:
-          json['completed_appointments'] ?? json['completedAppointments'] ?? 0,
-      totalPatients: json['total_patients'] ??
-          json['totalPatients'] ??
-          json['patients'] ??
+          json['completed'] ?? json['completed_appointments'] ?? 0,
+      totalPatients: json['patients'] ??
+          json['total_patients'] ??
           0,
     );
   }
