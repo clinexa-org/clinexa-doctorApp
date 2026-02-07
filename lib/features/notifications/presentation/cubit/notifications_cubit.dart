@@ -18,14 +18,14 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   }) : super(const NotificationsState());
 
   Future<void> loadNotifications() async {
-    debugPrint('📥 NotificationsCubit: loadNotifications() called');
+    debugPrint('NotificationsCubit: loadNotifications() called');
     emit(state.copyWith(status: NotificationsStatus.loading));
 
     final result = await getNotificationsUseCase();
 
     result.fold(
       (failure) {
-        debugPrint('❌ NotificationsCubit: Failed to load - ${failure.message}');
+        debugPrint('NotificationsCubit: Failed to load - ${failure.message}');
         emit(state.copyWith(
           status: NotificationsStatus.failure,
           errorMessage: failure.message,
@@ -34,8 +34,8 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       (notifications) {
         final unreadCount = notifications.where((n) => !n.isRead).length;
         debugPrint(
-            '✅ NotificationsCubit: Loaded ${notifications.length} notifications');
-        debugPrint('🔴 NotificationsCubit: Unread count = $unreadCount');
+            'NotificationsCubit: Loaded ${notifications.length} notifications');
+        debugPrint('NotificationsCubit: Unread count = $unreadCount');
         emit(state.copyWith(
           status: NotificationsStatus.success,
           notifications: notifications,
