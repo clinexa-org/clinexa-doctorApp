@@ -30,37 +30,51 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
   }
 
   Future<void> getAppointments({String? date, String? search}) async {
-    emit(state.copyWith(
-      status: DoctorAppointmentsStatus.loading,
-      filterDate: date ?? state.filterDate,
-      filterSearch: search ?? state.filterSearch,
-    ));
+    try {
+      print('DoctorAppointmentsCubit: Fetching appointments...');
+      emit(state.copyWith(
+        status: DoctorAppointmentsStatus.loading,
+        filterDate: date ?? state.filterDate,
+        filterSearch: search ?? state.filterSearch,
+      ));
 
-    final result = await getDoctorAppointmentsUseCase(
-      date: date ?? state.filterDate,
-      search: search ?? state.filterSearch,
-    );
+      final result = await getDoctorAppointmentsUseCase(
+        date: date ?? state.filterDate,
+        search: search ?? state.filterSearch,
+      );
 
-    result.fold(
-      (failure) => emit(state.copyWith(
+      result.fold(
+        (failure) {
+          print('DoctorAppointmentsCubit: Failed - ${failure.message}');
+          emit(state.copyWith(
+            status: DoctorAppointmentsStatus.failure,
+            errorMessage: failure.message,
+          ));
+        },
+        (appointments) {
+          print(
+              ' DoctorAppointmentsCubit: Success - ${appointments.length} items');
+          // Sort appointments by date and time ascending
+          appointments.sort((a, b) {
+            final dateCompare = a.date.compareTo(b.date);
+            if (dateCompare != 0) return dateCompare;
+            // If dates are equal, compare times (assuming HH:mm format)
+            return a.time.compareTo(b.time);
+          });
+
+          emit(state.copyWith(
+            status: DoctorAppointmentsStatus.success,
+            appointments: appointments,
+          ));
+        },
+      );
+    } catch (e, stack) {
+      print('DoctorAppointmentsCubit: Exception - $e\n$stack');
+      emit(state.copyWith(
         status: DoctorAppointmentsStatus.failure,
-        errorMessage: failure.message,
-      )),
-      (appointments) {
-        // Sort appointments by date and time ascending
-        appointments.sort((a, b) {
-          final dateCompare = a.date.compareTo(b.date);
-          if (dateCompare != 0) return dateCompare;
-          // If dates are equal, compare times (assuming HH:mm format)
-          return a.time.compareTo(b.time);
-        });
-
-        emit(state.copyWith(
-          status: DoctorAppointmentsStatus.success,
-          appointments: appointments,
-        ));
-      },
-    );
+        errorMessage: 'Unexpected error: $e',
+      ));
+    }
   }
 
   Future<void> confirmAppointment(String id) async {

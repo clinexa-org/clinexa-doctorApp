@@ -155,17 +155,38 @@ class AppointmentCard extends StatelessWidget {
       );
     }
 
-    if (onTap == null && !showConfirm && !showComplete) {
-      return const SizedBox.shrink();
+    List<Widget> actions = [];
+
+    // Cancel Button (Secondary Action)
+    if (showCancel && onCancel != null) {
+      actions.add(
+        GestureDetector(
+          onTap: onCancel,
+          child: Row(
+            children: [
+              Text(
+                'Cancel',
+                style: AppTextStyles.interMediumw500F12.copyWith(
+                  color: AppColors.error,
+                ),
+              ),
+              SizedBox(width: 4.w),
+              Icon(Iconsax.close_circle, size: 14.sp, color: AppColors.error),
+            ],
+          ),
+        ),
+      );
     }
 
+    // Primary Action
+    Widget? primaryAction;
     if (showConfirm) {
-      return GestureDetector(
+      primaryAction = GestureDetector(
         onTap: onConfirm,
         child: Row(
           children: [
             Text(
-              'Confirm Appointment',
+              'Confirm',
               style: AppTextStyles.interMediumw500F12.copyWith(
                 color: AppColors.success,
               ),
@@ -175,9 +196,8 @@ class AppointmentCard extends StatelessWidget {
           ],
         ),
       );
-    }
-    if (showComplete) {
-      return GestureDetector(
+    } else if (showComplete) {
+      primaryAction = GestureDetector(
         onTap: onComplete,
         child: Row(
           children: [
@@ -192,24 +212,34 @@ class AppointmentCard extends StatelessWidget {
           ],
         ),
       );
+    } else {
+      // Default "Details >"
+      primaryAction = GestureDetector(
+        onTap: onTap,
+        child: Row(
+          children: [
+            Text(
+              'Details',
+              style: AppTextStyles.interMediumw500F12.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            SizedBox(width: 4.w),
+            Icon(Iconsax.arrow_right_3,
+                size: 14.sp, color: AppColors.textSecondary),
+          ],
+        ),
+      );
     }
 
-    // Default "Details >"
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Text(
-            'Details',
-            style: AppTextStyles.interMediumw500F12.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          SizedBox(width: 4.w),
-          Icon(Iconsax.arrow_right_3,
-              size: 14.sp, color: AppColors.textSecondary),
-        ],
-      ),
+    if (actions.isNotEmpty) {
+      actions.add(SizedBox(width: 16.w)); // Spacing between Cancel and Primary
+    }
+    actions.add(primaryAction);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: actions,
     );
   }
 
