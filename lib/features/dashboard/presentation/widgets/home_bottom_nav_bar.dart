@@ -23,7 +23,6 @@ class HomeBottomNavBar extends StatelessWidget {
     return Container(
       height: .09.sh,
       decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
         border: Border(
           top: BorderSide(
             color: AppColors.border.withOpacity(0.5),
@@ -32,19 +31,19 @@ class HomeBottomNavBar extends StatelessWidget {
         ),
       ),
       child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onTap,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.surfaceElevated,
+        backgroundColor: AppColors.background,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textMuted,
         showUnselectedLabels: true,
         selectedLabelStyle: AppTextStyles.interSemiBoldw600F12,
         unselectedLabelStyle: AppTextStyles.interMediumw500F12,
+        currentIndex: currentIndex,
+        onTap: onTap,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Iconsax.home),
-            activeIcon: Icon(Iconsax.home_15),
+            icon: const Icon(Iconsax.home),
+            activeIcon: const Icon(Iconsax.home_15),
             label: 'Home',
           ),
           BottomNavigationBarItem(
@@ -75,13 +74,13 @@ class HomeBottomNavBar extends StatelessWidget {
             label: 'Appointments',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Iconsax.document_text),
-            activeIcon: Icon(Iconsax.document_text_1),
+            icon: const Icon(Iconsax.document_text),
+            activeIcon: const Icon(Iconsax.document_text_1),
             label: 'Prescriptions',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Iconsax.user),
-            activeIcon: Icon(Iconsax.user5),
+            icon: const Icon(Iconsax.user),
+            activeIcon: const Icon(Iconsax.user5),
             label: 'Profile',
           ),
         ],

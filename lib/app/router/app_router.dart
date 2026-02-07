@@ -16,6 +16,7 @@ import '../../features/prescriptions/domain/entities/prescription_entity.dart';
 import '../../features/prescriptions/presentation/pages/create_prescription_page.dart';
 import '../../features/prescriptions/presentation/pages/prescription_details_page.dart';
 import '../../features/notifications/presentation/pages/inbox_page.dart';
+import '../../features/patient_profile/presentation/pages/patient_profile_page.dart';
 import 'route_names.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -121,6 +122,15 @@ GoRouter createRouter(AuthCubit authCubit) {
       GoRoute(
         path: RouteNames.inbox,
         builder: (context, state) => const InboxPage(),
+      ),
+
+      // Patient Profile
+      GoRoute(
+        path: RouteNames.patientProfile,
+        builder: (context, state) {
+          final args = state.extra as PatientProfileArgs;
+          return PatientProfilePage(args: args);
+        },
       ),
     ],
   );

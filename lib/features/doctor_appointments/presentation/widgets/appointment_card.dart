@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/time_helper.dart';
+import '../../../patient_profile/presentation/pages/patient_profile_page.dart';
 import '../../domain/entities/doctor_appointment_entity.dart';
 
 class AppointmentCard extends StatelessWidget {
@@ -45,31 +48,44 @@ class AppointmentCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
-              Container(
-                width: 48.r,
-                height: 48.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.surface,
-                ),
-                child: ClipOval(
-                  child: appointment.patientAvatar != null &&
-                          appointment.patientAvatar!.isNotEmpty
-                      ? Image.network(
-                          appointment.patientAvatar!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Icon(Iconsax.user,
-                                  size: 24.sp, color: AppColors.textPrimary),
-                            );
-                          },
-                        )
-                      : Center(
-                          child: Icon(Iconsax.user,
-                              size: 24.sp, color: AppColors.textPrimary),
-                        ),
+              // Avatar - tappable
+              GestureDetector(
+                onTap: () {
+                  context.push(
+                    RouteNames.patientProfile,
+                    extra: PatientProfileArgs(
+                      patientId: appointment.patientId,
+                      patientName: appointment.patientName,
+                      patientPhone: appointment.patientPhone,
+                      patientAvatar: appointment.patientAvatar,
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 48.r,
+                  height: 48.r,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.surface,
+                  ),
+                  child: ClipOval(
+                    child: appointment.patientAvatar != null &&
+                            appointment.patientAvatar!.isNotEmpty
+                        ? Image.network(
+                            appointment.patientAvatar!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Icon(Iconsax.user,
+                                    size: 24.sp, color: AppColors.textPrimary),
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Icon(Iconsax.user,
+                                size: 24.sp, color: AppColors.textPrimary),
+                          ),
+                  ),
                 ),
               ),
               SizedBox(width: 12.w),

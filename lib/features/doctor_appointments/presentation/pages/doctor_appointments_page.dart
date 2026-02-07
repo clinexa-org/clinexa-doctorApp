@@ -132,33 +132,11 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage>
   Widget _buildHeader() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20.r,
-            backgroundColor: AppColors.surfaceElevated,
-            child:
-                Icon(Iconsax.user, size: 20.sp, color: AppColors.textPrimary),
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            'Appointments',
-            style: AppTextStyles.interSemiBoldw600F20.copyWith(
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const Spacer(),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Iconsax.notification,
-                size: 24.sp, color: AppColors.textPrimary),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Iconsax.setting,
-                size: 24.sp, color: AppColors.textPrimary),
-          ),
-        ],
+      child: Text(
+        'Appointments',
+        style: AppTextStyles.interSemiBoldw600F20.copyWith(
+          color: AppColors.textPrimary,
+        ),
       ),
     );
   }

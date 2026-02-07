@@ -170,7 +170,7 @@ Future<void> configureDependencies({required bool isProd}) async {
   sl.registerLazySingleton(() => CompleteAppointmentUseCase(sl()));
   sl.registerLazySingleton(() => CancelAppointmentUseCase(sl()));
 
-  sl.registerFactory<DoctorAppointmentsCubit>(
+  sl.registerLazySingleton<DoctorAppointmentsCubit>(
     () => DoctorAppointmentsCubit(
       getDoctorAppointmentsUseCase: sl(),
       confirmAppointmentUseCase: sl(),
@@ -192,7 +192,7 @@ Future<void> configureDependencies({required bool isProd}) async {
   sl.registerLazySingleton(() => CreatePrescriptionUseCase(sl()));
   sl.registerLazySingleton(() => UpdatePrescriptionUseCase(sl()));
 
-  sl.registerFactory<PrescriptionsCubit>(
+  sl.registerLazySingleton<PrescriptionsCubit>(
     () => PrescriptionsCubit(
       getPrescriptionsUseCase: sl(),
       createPrescriptionUseCase: sl(),
@@ -211,7 +211,7 @@ Future<void> configureDependencies({required bool isProd}) async {
 
   sl.registerLazySingleton(() => GetDashboardStatsUseCase(sl()));
 
-  sl.registerFactory<DashboardCubit>(
+  sl.registerLazySingleton<DashboardCubit>(
     () => DashboardCubit(
       getDashboardStatsUseCase: sl(),
       getDoctorAppointmentsUseCase: sl(),
@@ -234,7 +234,7 @@ Future<void> configureDependencies({required bool isProd}) async {
   sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl()));
   sl.registerLazySingleton(() => MarkAllNotificationsReadUseCase(sl()));
 
-  sl.registerFactory<NotificationsCubit>(
+  sl.registerLazySingleton<NotificationsCubit>(
     () => NotificationsCubit(
       getNotificationsUseCase: sl(),
       markNotificationReadUseCase: sl(),

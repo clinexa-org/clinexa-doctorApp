@@ -124,6 +124,7 @@ class _DashboardContentState extends State<_DashboardContent> {
           backgroundColor: AppColors.background,
           appBar: AppBar(
             backgroundColor: AppColors.background,
+            scrolledUnderElevation: 0,
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -171,54 +172,56 @@ class _DashboardContentState extends State<_DashboardContent> {
                   );
                 },
               ),
-              // Refresh Icon
-              IconButton(
-                onPressed: () =>
-                    context.read<DashboardCubit>().refreshDashboard(),
-                icon: const Icon(Iconsax.refresh, color: AppColors.textPrimary),
-              ),
             ],
           ),
-          body: RefreshIndicator(
-            onRefresh: () => context.read<DashboardCubit>().refreshDashboard(),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20.h),
+          body: Column(
+            children: [
+              SizedBox(height: 20.h),
+              // Fixed Stats Grid
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: isLoading
+                    ? const DashboardStatsShimmer()
+                    : state.stats != null
+                        ? _buildStatsGrid(state)
+                        : const SizedBox.shrink(),
+              ),
+              SizedBox(height: 32.h),
 
-                  // Stats Grid
-                  isLoading
-                      ? const DashboardStatsShimmer()
-                      : state.stats != null
-                          ? _buildStatsGrid(state)
-                          : const SizedBox.shrink(),
-
-                  SizedBox(height: 32.h),
-
-                  // Today's Appointments Section
-                  Text(
-                    "Today's Appointments",
-                    style: AppTextStyles.interSemiBoldw600F18.copyWith(
-                      color: AppColors.textPrimary,
+              // Scrollable Today's Appointments Section
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () =>
+                      context.read<DashboardCubit>().refreshDashboard(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Today's Appointments",
+                          style: AppTextStyles.interSemiBoldw600F18.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        isLoading
+                            ? ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: 3,
+                                itemBuilder: (context, index) =>
+                                    const TodayAppointmentCardShimmer(),
+                              )
+                            : _buildTodayAppointments(state.todayAppointments),
+                        SizedBox(height: 40.h),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 16.h),
-                  isLoading
-                      ? ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: 3,
-                          itemBuilder: (context, index) =>
-                              const TodayAppointmentCardShimmer(),
-                        )
-                      : _buildTodayAppointments(state.todayAppointments),
-                  SizedBox(height: 40.h),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       },

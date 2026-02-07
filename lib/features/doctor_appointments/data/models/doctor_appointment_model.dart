@@ -17,7 +17,7 @@ class DoctorAppointmentModel extends DoctorAppointmentEntity {
   factory DoctorAppointmentModel.fromJson(Map<String, dynamic> json) {
     final startTimeString = json['start_time'];
     final startTime = startTimeString != null
-        ? DateTime.parse(startTimeString)
+        ? DateTime.parse(startTimeString).toLocal()
         : DateTime.now();
 
     // Handle nested patient data
