@@ -1,3 +1,6 @@
+
+<img width="1184" height="864" alt="Gemini_Generated_Image_g369zbg369zbg369" src="https://github.com/user-attachments/assets/96d3bccf-520e-4abf-965d-483b5b570863" />
+
 # Clinexa Doctor 🩺
 
 **Clinexa Doctor** is a premium, production-grade Flutter application designed to empower healthcare professionals with a comprehensive clinic management solution. It streamlines daily operations, from appointment tracking to prescription management, all within a modern, responsive, and intuitive interface.
